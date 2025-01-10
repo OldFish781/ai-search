@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Search</title>
+    <style>
+        html {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            background-color: #f9f9f9;
+        }
+        #left-container {
+            border-right: 1px solid #eee;
+            width: 40%;
+            max-width: 400px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #search-container {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            height: 44px; /* 设定高度 */
+        }
+        #search-container select, #search-container input, #search-container button {
+            padding: 0 10px; /* 调整 padding 以确保高度一致 */
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 0;
+            height: 100%; /* 内部元素高度 100% */
+            box-sizing: border-box; /* 确保内外边距计算准确 */
+            transition: border-color 0.3s, background-color 0.3s;
+        }
+        #search-container select {
+            border-top-left-radius: 4px;
+            border-bottom-left-radius: 4px;
+        }
+        #search-container input {
+            flex: 1;
+            border-left: none;
+            border-right: none;
+        }
+        #search-container input:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+        #search-container button {
+            border-top-right-radius: 4px;
+            border-bottom-right-radius: 4px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            position: relative;
+        }
+        #search-container button.loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #fff;
+            border-top: 2px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            transform: translate(-50%, -50%);
+        }
+        #search-container button.loading {
+            color: transparent;
+        }
+        #search-container button:hover {
+            background-color: #0056b3;
+        }
+        #history-container {
+            width: 100%;
+            background-color: #fff;
+            padding: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+            border-radius: 8px;
+        }
+        #history-container ul {
+            list-style: none;
+            padding: 0;
+        }
+        #history-container li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            color: #007bff;
+            margin-bottom: 4px;
+        }
+        #history-container li span {
+            flex-grow: 1;
+        }
+        #history-container li:hover {
+            text-decoration: underline;
+        }
+        .delete-button {
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 2px 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .delete-button:hover {
+            background-color: #cc0000;
+        }
+        #right-container {
+            flex: 1;
+            overflow-y: auto;
+        }
+        #toolbar {
+            display: flex;
+            justify-content: flex-end;
+            position: sticky;
+            top: 0;
+            background-color: #fff;
+            z-index: 1000;
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        #copy-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #copy-button:hover {
+            background-color: #0056b3;
+        }
+        #result-container {
+            width: 100%;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            flex-grow: 1;
+        }
+        .markdown-body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        .markdown-body h1, .markdown-body h2, .markdown-body h3 {
+            border-bottom: 1px solid #eaecef;
+            padding-bottom: 0.3em;
+            margin: 0;
+        }
+        .markdown-body pre {
+            background-color: #f6f8fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            height: calc(100vh - 48.5px);
+        }
+        .markdown-body code {
+            background-color: #f6f8fa;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/4.0.0/github-markdown.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css">
+</head>
+<body>
+    <div id="left-container">
+        <div id="search-container">
+            <select id="engine">
+                <option value="baidu">百度</option>
+                <option value="bing">必应</option>
+                <option value="sogou">搜狗</option>
+            </select>
+            <input type="text" id="keyword" placeholder="输入关键词" onkeypress="handleKeyPress(event)">
+            <button id="search-button" onclick="searchAndSummarize()">搜索</button>
+        </div>
+        <div id="history-container">
+            <div>历史搜索</div>
+            <ul id="history-list"></ul>
+        </div>
+    </div>
+    <div id="right-container">
+        <div id="toolbar">
+            <button id="copy-button" onclick="copyToClipboard()">复制内容</button>
+        </div>
+        <div id="result-container" class="markdown-body">
+            <pre id="result"></pre>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/contrib/auto-render.min.js"></script>
+
+    <script>
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                searchAndSummarize();
+            }
+        }
+
+        // 直接使用 KaTeX 渲染
+        function renderMath(content) {
+            const element = document.createElement('div');
+            element.innerHTML = marked.parse(content);
+            renderMathInElement(element, {
+                delimiters: [
+                    { left: "$$", right: "$$", display: true },
+                    { left: "$", right: "$", display: false }
+                ]
+            });
+            // 移除空行
+            return element.innerHTML.replace(/^\s*$(?:\r\n?|\n)/gm, '');
+        }
+
+        async function searchAndSummarize() {
+            const engine = document.getElementById('engine').value;
+            const keyword = document.getElementById('keyword').value;
+            const button = document.getElementById('search-button');
+            const result = document.getElementById('result');
+            button.classList.add('loading');
+            result.textContent = '';
+
+            try {
+                const response = await fetch('http://192.168.1.200:8181/search_and_summarize/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ engine: engine, keyword: keyword, max_results: 5 })
+                });
+                const data = await response.json();
+                const renderedContent = renderMath(data.summary);
+                result.innerHTML = renderedContent;
+
+                // 缓存搜索结果
+                const history = JSON.parse(localStorage.getItem('searchHistory')) || [];
+                history.push({ engine, keyword, result: renderedContent });
+                localStorage.setItem('searchHistory', JSON.stringify(history));
+                updateHistoryList();
+            } catch (error) {
+                console.error(error);
+                result.textContent = '请求失败，请重试。';
+            } finally {
+                button.classList.remove('loading');
+            }
+        }
+
+        // 加载缓存的搜索结果
+        window.onload = function() {
+            const lastSearch = JSON.parse(localStorage.getItem('lastSearch'));
+            if (lastSearch) {
+                document.getElementById('engine').value = lastSearch.engine;
+                document.getElementById('keyword').value = lastSearch.keyword;
+                document.getElementById('result').innerHTML = lastSearch.result;
+            }
+            updateHistoryList();
+        }
+
+        // 更新历史搜索列表
+        function updateHistoryList() {
+            const historyList = document.getElementById('history-list');
+            const history = JSON.parse(localStorage.getItem('searchHistory')) || [];
+            historyList.innerHTML = '';
+            history.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `<span>${index + 1}. ${item.keyword}<span style="color:lightgray;margin-left: 4px">[${item.engine}]</span> </span> <button class="delete-button" onclick="deleteHistory(${index})">删除</button>`;
+                li.onclick = () => {
+                    document.getElementById('engine').value = item.engine;
+                    document.getElementById('keyword').value = item.keyword;
+                    document.getElementById('result').innerHTML = item.result;
+                };
+                historyList.appendChild(li);
+            });
+        }
+
+        // 删除历史记录
+        function deleteHistory(index) {
+            const history = JSON.parse(localStorage.getItem('searchHistory')) || [];
+            history.splice(index, 1);
+            localStorage.setItem('searchHistory', JSON.stringify(history));
+            updateHistoryList();
+        }
+
+        // 复制内容到剪贴板
+        function copyToClipboard() {
+            const result = document.getElementById('result').innerText;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(result).then(() => {
+                    alert('内容已复制到剪贴板');
+                }).catch(err => {
+                    console.error('复制失败', err);
+                });
+            } else {
+                // 回退方案：使用文本区域来复制内容
+                const textArea = document.createElement('textarea');
+                textArea.value = result;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    alert('内容已复制到剪贴板');
+                } catch (err) {
+                    console.error('复制失败', err);
+                }
+                document.body.removeChild(textArea);
+            }
+        }
+    </script>
+</body>
+</html>

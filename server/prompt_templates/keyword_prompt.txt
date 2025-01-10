@@ -1,0 +1,2 @@
+基于以下内容，总结 {keyword}：
+{content}

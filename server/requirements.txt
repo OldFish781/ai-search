@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+playwright
+trafilatura
+requests
+user_agents
+lxml[html_clean]
