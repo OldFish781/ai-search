@@ -163,7 +163,7 @@ async def fetch_and_convert_to_md(url, index):
 
 
 def load_prompt_template(keyword):
-    template_path = "server/prompt_templates"
+    template_path = "prompt_templates"
     if keyword:
         template_file = os.path.join(template_path, "keyword_prompt.txt")
     else:
@@ -222,7 +222,7 @@ async def search_and_summarize(request: SearchRequest):
         else:
             raise ValueError(f"未知的搜索引擎: {request.engine}")
 
-        logger.info(f"从 {request.engine} 获取的搜索结果：")
+        logger.info(f"关键字：{request.keyword}\n从 {request.engine} 获取的搜索结果：")
         for index, result in enumerate(search_results, start=1):
             logger.info(f"{index}. {result['title']}")
 

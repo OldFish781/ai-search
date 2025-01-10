@@ -269,12 +269,6 @@
 
         // 加载缓存的搜索结果
         window.onload = function() {
-            const lastSearch = JSON.parse(localStorage.getItem('lastSearch'));
-            if (lastSearch) {
-                document.getElementById('engine').value = lastSearch.engine;
-                document.getElementById('keyword').value = lastSearch.keyword;
-                document.getElementById('result').innerHTML = lastSearch.result;
-            }
             updateHistoryList();
         }
 
@@ -297,10 +291,12 @@
 
         // 删除历史记录
         function deleteHistory(index) {
-            const history = JSON.parse(localStorage.getItem('searchHistory')) || [];
-            history.splice(index, 1);
-            localStorage.setItem('searchHistory', JSON.stringify(history));
-            updateHistoryList();
+            if (confirm('确定要删除这条历史记录吗？')) {
+                const history = JSON.parse(localStorage.getItem('searchHistory')) || [];
+                history.splice(index, 1);
+                localStorage.setItem('searchHistory', JSON.stringify(history));
+                updateHistoryList();
+            }
         }
 
         // 复制内容到剪贴板
