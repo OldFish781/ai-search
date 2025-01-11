@@ -12,9 +12,11 @@ AI-Search 是一个基于多搜索引擎的搜索和总结工具，用户可以�
 │   └── index.html          # 前端页面
 ├── server/                 # 后端代码
 │   ├── html2md.py          # 后端服务
+│   ├── utils.py            # 工具类
 │   └── prompt_templates/   # 提示词模板
 │       ├── keyword_prompt.txt
 │       └── no_keyword_prompt.txt
+├── snapshots/              # 截图存放目录
 └── README.md               # 项目说明文件
 ```
 
@@ -95,6 +97,13 @@ AI-Search 是一个基于多搜索引擎的搜索和总结工具，用户可以�
 
 - `keyword_prompt.txt`：包含关键词的提示词模板。
 - `no_keyword_prompt.txt`：不包含关键词的提示词模板。
+
+## 截图
+
+截图存放在 `snapshots/` 目录下，每次搜索会根据关键词和 URL 生成对应的截图文件。
+
+使用截图![snapshots/](snapshot/snapshot-20240505.png)
+
 
 ## 日志
 

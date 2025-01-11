@@ -118,7 +118,7 @@ def summarize_markdown_sync(keyword, md_content, index):
         data=json.dumps({
             "model": "TuringYitian-32b",
             "messages": [
-                {"role": "system", "content": "你是出色的概要助手，帮我处理内容。"},
+                {"role": "system", "content": "你是出色的概要总结助手，帮我整理内容。"},
                 {"role": "user", "content": prompt}
             ],
             "max_tokens": 4000,
