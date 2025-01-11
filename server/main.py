@@ -11,6 +11,7 @@ import requests
 import json
 from fastapi.middleware.cors import CORSMiddleware
 import os
+from utils import search_baidu, search_bing, search_sogou
 
 # 配置日志
 logging.basicConfig(level=logging.INFO,
@@ -55,73 +56,6 @@ class SearchRequest(BaseModel):
     engine: str  # 搜索引擎，如 baidu, bing, sogou
     keyword: str  # 搜索关键词
     max_results: int = 5  # 默认返回最多 5 个结果
-
-
-# 获取搜索引擎的结果
-async def search_baidu(keyword, max_results=5):
-    async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
-        context = await browser.new_context()
-        page = await context.new_page()
-
-        await page.goto("https://www.baidu.com", wait_until="load")
-        await page.fill("input[name='wd']", keyword)
-        await page.press("input[name='wd']", "Enter")
-        await page.wait_for_selector("#content_left")
-
-        results = await page.query_selector_all("#content_left .t a")
-        search_results = []
-        for result in results[:max_results]:
-            title = await result.inner_text()
-            link = await result.get_attribute("href")
-            search_results.append({"title": title, "link": link})
-
-        await browser.close()
-        return search_results
-
-
-async def search_bing(keyword, max_results=5):
-    async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
-        context = await browser.new_context()
-        page = await context.new_page()
-
-        await page.goto("https://cn.bing.com", wait_until="load")
-        await page.fill("input[name='q']", keyword)
-        await page.press("input[name='q']", "Enter")
-        await page.wait_for_selector("#b_results")
-
-        results = await page.query_selector_all("#b_results .b_algo h2 a")
-        search_results = []
-        for result in results[:max_results]:
-            title = await result.inner_text()
-            link = await result.get_attribute("href")
-            search_results.append({"title": title, "link": link})
-
-        await browser.close()
-        return search_results
-
-
-async def search_sogou(keyword, max_results=5):
-    async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
-        context = await browser.new_context()
-        page = await context.new_page()
-
-        await page.goto("https://www.sogou.com", wait_until="load")
-        await page.fill("input[name='query']", keyword)
-        await page.press("input[name='query']", "Enter")
-        await page.wait_for_selector("#results")
-
-        results = await page.query_selector_all(".results .vrTitle a")
-        search_results = []
-        for result in results[:max_results]:
-            title = await result.inner_text()
-            link = await result.get_attribute("href")
-            search_results.append({"title": title, "link": link})
-
-        await browser.close()
-        return search_results
 
 
 # 获取页面并转换为 Markdown 格式
@@ -184,7 +118,7 @@ def summarize_markdown_sync(keyword, md_content, index):
         data=json.dumps({
             "model": "TuringYitian-32b",
             "messages": [
-                {"role": "system", "content": "你是出色的概要助手，帮我处理内容。"},
+                {"role": "system", "content": "你是出色的概要总结助手，帮我整理内容。"},
                 {"role": "user", "content": prompt}
             ],
             "max_tokens": 4000,
