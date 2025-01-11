@@ -7,6 +7,8 @@
     <style>
         html {
             box-sizing: border-box;
+            padding: 0;
+            margin: 0;
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -20,7 +22,7 @@
             border-right: 1px solid #eee;
             width: 40%;
             max-width: 400px;
-            padding: 20px;
+            padding: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             background-color: #fff;
             display: flex;
@@ -90,6 +92,9 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             box-sizing: border-box;
             border-radius: 8px;
+            max-height: 800px; /* 增加最大高度 */
+            overflow-y: auto; /* 超出部分滚动 */
+            flex-grow: 1; /* 新增 */
         }
         #history-container ul {
             list-style: none;
