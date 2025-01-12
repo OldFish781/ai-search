@@ -3,10 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI-Search</title>
+    <title>AI Search</title>
+    <link rel="icon" href="/assets/images/favicon.ico">
     <style>
         html {
             box-sizing: border-box;
+            padding: 0;
+            margin: 0;
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -20,7 +23,6 @@
             border-right: 1px solid #eee;
             width: 40%;
             max-width: 400px;
-            padding: 20px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             background-color: #fff;
             display: flex;
@@ -28,10 +30,10 @@
             align-items: center;
         }
         #search-container {
-            margin-bottom: 20px;
             display: flex;
             align-items: center;
             width: 100%;
+            padding: 10px;
             height: 44px; /* 设定高度 */
         }
         #search-container select, #search-container input, #search-container button {
@@ -44,8 +46,7 @@
             transition: border-color 0.3s, background-color 0.3s;
         }
         #search-container select {
-            border-top-left-radius: 4px;
-            border-bottom-left-radius: 4px;
+            appearance: none; -moz-appearance: none; -webkit-appearance: none; border: 1px solid #ccc;
         }
         #search-container input {
             flex: 1;
@@ -57,8 +58,6 @@
             outline: none;
         }
         #search-container button {
-            border-top-right-radius: 4px;
-            border-bottom-right-radius: 4px;
             background-color: #007bff;
             color: white;
             cursor: pointer;
@@ -84,12 +83,16 @@
             background-color: #0056b3;
         }
         #history-container {
+            padding: 10px;
             width: 100%;
             background-color: #fff;
             padding: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             box-sizing: border-box;
             border-radius: 8px;
+            max-height: 800px; /* 增加最大高度 */
+            overflow-y: auto; /* 超出部分滚动 */
+            flex-grow: 1; /* 新增 */
         }
         #history-container ul {
             list-style: none;
@@ -123,7 +126,7 @@
         }
         #right-container {
             flex: 1;
-            overflow-y: auto;
+            overflow-y: hidden;
         }
         #toolbar {
             display: flex;
@@ -181,23 +184,84 @@
             0% { transform: translate(-50%, -50%) rotate(0deg); }
             100% { transform: translate(-50%, -50%) rotate(360deg); }
         }
+        .markdown-body table {
+            display: table!important;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        button:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .delete-button {
+            background-color: #ff4d4d;
+            color: white;
+            padding: 5px 10px;
+        }
+        .delete-button:hover {
+            background-color: #cc0000;
+        }
+        #search-button {
+            background-color: #007bff;
+            color: white;
+        }
+        #search-button:hover {
+            background-color: #0056b3;
+        }
+        #copy-button {
+            background-color: #007bff;
+            color: white;
+            padding: 5px 10px;
+        }
+        #copy-button:hover {
+            background-color: #0056b3;
+        }
+        #clear-history-button {
+            background-color: #ff4d4d;
+            color: white;
+            padding: 5px 10px;
+        }
+        #clear-history-button:hover {
+            background-color: #cc0000;
+        }
+        #logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #007bff;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            width: 100%;
+            height: 52px;
+        }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/4.0.0/github-markdown.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css">
 </head>
 <body>
     <div id="left-container">
+        <div id="logo">AI-Search</div> <!-- 添加 logo -->
         <div id="search-container">
             <select id="engine">
                 <option value="baidu">百度</option>
                 <option value="bing">必应</option>
-                <!-- <option value="sogou">搜狗</option> -->
+                <option value="sogou">搜狗</option>
+                <option value="wechat">公众号</option>
             </select>
             <input type="text" id="keyword" placeholder="输入关键词" onkeypress="handleKeyPress(event)">
             <button id="search-button" onclick="searchAndSummarize()">搜索</button>
         </div>
         <div id="history-container">
-            <div>历史搜索</div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="color: #333;font-weight: bold;">历史搜索</div>
+                <button id="clear-history-button" onclick="clearHistory()">清空历史</button> <!-- 添加 id -->
+            </div>
             <ul id="history-list"></ul>
         </div>
     </div>
@@ -210,9 +274,9 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/contrib/auto-render.min.js"></script>
+    <script src="/assets/js/marked.min.js"></script>
+    <script src="/assets/js/katex.min.js"></script>
+    <script src="/assets/js/auto-render.min.js"></script>
 
     <script>
         function handleKeyPress(event) {
@@ -296,6 +360,14 @@
                 const history = JSON.parse(localStorage.getItem('searchHistory')) || [];
                 history.splice(index, 1);
                 localStorage.setItem('searchHistory', JSON.stringify(history));
+                updateHistoryList();
+            }
+        }
+
+        // 清空历史记录
+        function clearHistory() {
+            if (confirm('确定要清空所有历史记录吗？')) {
+                localStorage.removeItem('searchHistory');
                 updateHistoryList();
             }
         }

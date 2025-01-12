@@ -11,7 +11,7 @@ import requests
 import json
 from fastapi.middleware.cors import CORSMiddleware
 import os
-from utils import search_baidu, search_bing, search_sogou
+from utils import search_baidu, search_bing, search_sogou, search_sogou_wechat, random_user_agent
 
 # 配置日志
 logging.basicConfig(level=logging.INFO,
@@ -34,21 +34,6 @@ app.add_middleware(
     allow_headers=["*"],  # 允许所有请求头
 )
 
-# 生成随机 User-Agent 的函数
-def random_user_agent():
-    user_agent_list = [
-        # Chrome on Windows
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.5481.100 Safari/537.36",
-        # Firefox on Windows
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:110.0) Gecko/20100101 Firefox/110.0",
-        # Chrome on Mac
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.5481.100 Safari/537.36",
-        # Safari on iPhone
-        "Mozilla/5.0 (iPhone; CPU iPhone OS 15_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.3 Mobile/15E148 Safari/604.1",
-        # Edge on Windows
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.5481.100 Safari/537.36 Edg/110.0.1587.46",
-    ]
-    return random.choice(user_agent_list)
 
 
 # 请求数据的 Pydantic 模型
@@ -59,11 +44,15 @@ class SearchRequest(BaseModel):
 
 
 # 获取页面并转换为 Markdown 格式
-def fetch_and_convert_to_md_sync(url, index):
-    async def fetch(url):
+def fetch_and_convert_to_md_sync(url, index, headers=None, cookies=None):
+    async def fetch(url, headers, cookies):
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=True)
             context = await browser.new_context(user_agent=random_user_agent())
+            if headers:
+                await context.set_extra_http_headers(headers)
+            if cookies:
+                await context.add_cookies(cookies)
             context.set_default_navigation_timeout(60000)  # 设置请求超时
             page = await context.new_page()
 
@@ -83,13 +72,13 @@ def fetch_and_convert_to_md_sync(url, index):
             finally:
                 await browser.close()
 
-    return asyncio.run(fetch(url))
+    return asyncio.run(fetch(url, headers, cookies))
 
-async def fetch_and_convert_to_md(url, index):
+async def fetch_and_convert_to_md(url, index, headers=None, cookies=None):
     start_time = time.time()
     loop = asyncio.get_running_loop()
     with ThreadPoolExecutor() as pool:
-        result = await loop.run_in_executor(pool, fetch_and_convert_to_md_sync, url, index)
+        result = await loop.run_in_executor(pool, fetch_and_convert_to_md_sync, url, index, headers, cookies)
     end_time = time.time()
     elapsed_time = end_time - start_time
     logger.info(f"转换为 MD 耗时 (序号 {index}): {elapsed_time:.2f} 秒")
@@ -146,6 +135,8 @@ async def summarize_markdown(keyword, md_content, index):
 async def search_and_summarize(request: SearchRequest):
     try:
         start_time = time.time()
+        headers = None
+        cookies = None
         # 获取搜索结果
         if request.engine == "baidu":
             search_results = await search_baidu(request.keyword, request.max_results)
@@ -153,6 +144,8 @@ async def search_and_summarize(request: SearchRequest):
             search_results = await search_bing(request.keyword, request.max_results)
         elif request.engine == "sogou":
             search_results = await search_sogou(request.keyword, request.max_results)
+        elif request.engine == "wechat":
+            search_results, headers, cookies = await search_sogou_wechat(request.keyword, request.max_results)
         else:
             raise ValueError(f"未知的搜索引擎: {request.engine}")
 
@@ -162,7 +155,7 @@ async def search_and_summarize(request: SearchRequest):
 
         mark_downs = []
         # 递归获取每个链接的 Markdown 内容并总结
-        tasks = [fetch_and_convert_to_md(result["link"], index) for index, result in enumerate(search_results, start=1)]
+        tasks = [fetch_and_convert_to_md(result["link"], index, headers, cookies) for index, result in enumerate(search_results, start=1)]
         markdowns = await asyncio.gather(*tasks)
 
         # 对每个 Markdown 进行总结
@@ -177,7 +170,7 @@ async def search_and_summarize(request: SearchRequest):
         return {"summary": summary}
 
     except Exception as e:
-        logger.error(f"处理请求时出错：{e}")
+        logger.error(f"处理请求时出错：{e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 
