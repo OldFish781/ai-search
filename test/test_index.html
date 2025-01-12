@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <!-- ...existing code... -->
+</head>
+<body>
+    <!-- ...existing code... -->
+    <script>
+        function testSearchAndSummarize() {
+            const engine = document.getElementById('engine').value;
+            const keyword = document.getElementById('keyword').value;
+            const result = document.getElementById('result');
+            result.textContent = '';
+
+            fetch('http://192.168.1.200:8181/search_and_summarize/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ engine: engine, keyword: keyword, max_results: 5 })
+            })
+            .then(response => response.json())
+            .then(data => {
+                result.innerHTML = data.summary;
+                console.log('测试通过');
+            })
+            .catch(error => {
+                console.error('测试失败', error);
+            });
+        }
+
+        // 自动运行测试
+        window.onload = function() {
+            document.getElementById('engine').value = 'baidu';
+            document.getElementById('keyword').value = '测试';
+            testSearchAndSummarize();
+        }
+    </script>
+</body>
+</html>
