@@ -25,7 +25,7 @@ def random_user_agent():
 async def search_baidu(keyword, max_results=5):
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
-        context = await browser.new_context()
+        context = await browser.new_context(user_agent=random_user_agent())
         page = await context.new_page()
 
         await page.goto("https://www.baidu.com", wait_until="load")
@@ -47,7 +47,7 @@ async def search_baidu(keyword, max_results=5):
 async def search_bing(keyword, max_results=5):
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
-        context = await browser.new_context()
+        context = await browser.new_context(user_agent=random_user_agent())
         page = await context.new_page()
 
         await page.goto("https://cn.bing.com", wait_until="load")
@@ -71,9 +71,7 @@ async def search_bing(keyword, max_results=5):
 async def search_sogou(keyword, max_results=5):
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
-        context = await browser.new_context(
-            user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
-        )
+        context = await browser.new_context(user_agent=random_user_agent())
         page = await context.new_page()
 
         await page.goto(f"https://www.sogou.com/web?query={keyword}", wait_until="load")
@@ -96,9 +94,7 @@ async def search_sogou(keyword, max_results=5):
 async def search_sogou_wechat(keyword, max_results=5):
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
-        context = await browser.new_context(
-            user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
-        )
+        context = await browser.new_context(user_agent=random_user_agent())
         page = await context.new_page()
 
         # 获取 cookies
