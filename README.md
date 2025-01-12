@@ -9,10 +9,18 @@ AI-Search 是一个基于多搜索引擎的搜索和总结工具，用户可以�
 ```
 /
 ├── front/                  # 前端代码
-│   └── index.html          # 前端页面
+│   ├── index.html          # 前端页面
+│   └── assets/             # 前端资源
+│       ├── js/             # JavaScript 文件
+│       │   ├── marked.min.js
+│       │   ├── katex.min.js
+│       │   └── auto-render.min.js
+│       └── css/            # CSS 文件
 ├── server/                 # 后端代码
 │   ├── main.py             # 后端服务入口
 │   ├── utils.py            # 工具类
+│   ├── requirements.txt    # 依赖文件
+│   ├── Dockerfile          # Dockerfile 文件
 │   └── prompt_templates/   # 提示词模板
 │       ├── keyword_prompt.txt
 │       └── no_keyword_prompt.txt
