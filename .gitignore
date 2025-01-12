@@ -25,3 +25,6 @@ TestResults.xml
 node_modules
 
 __pycache__
+
+rsync_deploy.sh
+.exclude
