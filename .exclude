@@ -1,6 +1,0 @@
-.idea
-.git
-.exclude
-rsync_deploy.sh
-.venv
-.vscode

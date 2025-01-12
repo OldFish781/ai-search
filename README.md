@@ -2,17 +2,25 @@
 
 ## 项目简介
 
-AI-Search 是一个基于多搜索引擎的搜索和总结工具，用户可以选择不同的搜索引擎进行关键词搜索，并对搜索结果进行总结。
+AI-Search 是一个基于多搜索引擎的搜索和总结工具，用户可以选择不同的搜索引擎进行关键词搜索，并对搜索结果进行总结。支持的搜索引擎包括百度、必应、搜狗以及搜狗微信文章搜索。
 
 ## 项目结构
 
 ```
 /
 ├── front/                  # 前端代码
-│   └── index.html          # 前端页面
+│   ├── index.html          # 前端页面
+│   └── assets/             # 前端资源
+│       ├── js/             # JavaScript 文件
+│       │   ├── marked.min.js
+│       │   ├── katex.min.js
+│       │   └── auto-render.min.js
+│       └── css/            # CSS 文件
 ├── server/                 # 后端代码
-│   ├── html2md.py          # 后端服务
+│   ├── main.py             # 后端服务入口
 │   ├── utils.py            # 工具类
+│   ├── requirements.txt    # 依赖文件
+│   ├── Dockerfile          # Dockerfile 文件
 │   └── prompt_templates/   # 提示词模板
 │       ├── keyword_prompt.txt
 │       └── no_keyword_prompt.txt
