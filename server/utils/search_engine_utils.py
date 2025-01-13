@@ -1,5 +1,6 @@
 import asyncio
 from playwright.async_api import async_playwright
+import requests
 from requests.utils import dict_from_cookiejar
 from .user_agent_utils import UserAgentUtils
 from .log_utils import LogUtils
@@ -15,7 +16,7 @@ class SearchEngineUtils:
             page = await context.new_page()
 
             await page.goto("https://www.baidu.com", wait_until="load")
-            await page.wait_for_selector("input[name='wd']")  # 确保元素加载完成
+            await page.wait_for_selector("input[name='wd']", timeout=60000)  # 增加超时时间到 60000ms
             await page.fill("input[name='wd']", keyword)
             await page.press("input[name='wd']", "Enter")
             await page.wait_for_selector("#content_left")
@@ -40,7 +41,7 @@ class SearchEngineUtils:
             await page.goto("https://cn.bing.com", wait_until="load")
             await page.fill("input[name='q']", keyword)
             await page.press("input[name='q']", "Enter")
-            await page.wait_for_selector("#b_results")
+            await page.wait_for_selector("#b_results", timeout=60000)
 
             results = await page.query_selector_all("#b_results .b_algo h2 a")
             search_results = []

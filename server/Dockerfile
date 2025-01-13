@@ -47,6 +47,9 @@ RUN wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VER
     cd .. && \
     rm -rf Python-${PYTHON_VERSION} Python-${PYTHON_VERSION}.tgz
 
+RUN echo 'Asia/Shanghai' > /etc/timezone && \
+    ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+
 # 设置工作目录
 WORKDIR /app
 
