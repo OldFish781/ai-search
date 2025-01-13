@@ -3,6 +3,8 @@ services:
     image: harbor.cloud.weique360.com/common/ai-search:amd64-v1.0.0
     platform: linux/amd64
     container_name: ai-search-server
+    environment:
+      - TZ=Asia/Shanghai
     build: 
       context: ./server
       dockerfile: Dockerfile
@@ -12,6 +14,8 @@ services:
       - app-network
     volumes:
       - ./server:/app
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     command: ["bash", 'start.sh']
 
   web-ui:

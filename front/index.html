@@ -248,18 +248,18 @@
     <div id="left-container">
         <div id="logo">AI-Search</div> <!-- 添加 logo -->
         <div id="search-container">
-            <select id="engine">
+            <!-- <select id="engine">
                 <option value="baidu">百度</option>
                 <option value="bing">必应</option>
                 <option value="sogou">搜狗</option>
                 <option value="wechat">公众号</option>
-            </select>
-            <input type="text" id="keyword" placeholder="输入关键词" onkeypress="handleKeyPress(event)">
-            <button id="search-button" onclick="searchAndSummarize()">搜索</button>
+            </select> -->
+            <input type="text" id="message" placeholder="输入信息" onkeypress="handleKeyPress(event)">
+            <button id="search-button" onclick="searchAndSummarize()">提问</button>
         </div>
         <div id="history-container">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div style="color: #333;font-weight: bold;">历史搜索</div>
+                <div style="color: #333;font-weight: bold;">历史</div>
                 <button id="clear-history-button" onclick="clearHistory()">清空历史</button> <!-- 添加 id -->
             </div>
             <ul id="history-list"></ul>
@@ -300,8 +300,7 @@
         }
 
         async function searchAndSummarize() {
-            const engine = document.getElementById('engine').value;
-            const keyword = document.getElementById('keyword').value;
+            const message = document.getElementById('message').value;
             const button = document.getElementById('search-button');
             const result = document.getElementById('result');
             button.classList.add('loading');
@@ -313,7 +312,7 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ engine: engine, keyword: keyword, max_results: 5 })
+                    body: JSON.stringify({ message: message, max_results: 5 })
                 });
                 const data = await response.json();
                 const renderedContent = renderMath(data.summary);
@@ -321,7 +320,7 @@
 
                 // 缓存搜索结果
                 const history = JSON.parse(localStorage.getItem('searchHistory')) || [];
-                history.push({ engine, keyword, result: renderedContent });
+                history.push({ message, result: renderedContent });
                 localStorage.setItem('searchHistory', JSON.stringify(history));
                 updateHistoryList();
             } catch (error) {
@@ -344,10 +343,9 @@
             historyList.innerHTML = '';
             history.forEach((item, index) => {
                 const li = document.createElement('li');
-                li.innerHTML = `<span>${index + 1}. ${item.keyword}<span style="color:lightgray;margin-left: 4px">[${item.engine}]</span> </span> <button class="delete-button" onclick="deleteHistory(${index})">删除</button>`;
+                li.innerHTML = `<span>${index + 1}. ${item.message}</span> <button class="delete-button" onclick="deleteHistory(${index})">删除</button>`;
                 li.onclick = () => {
-                    document.getElementById('engine').value = item.engine;
-                    document.getElementById('keyword').value = item.keyword;
+                    document.getElementById('message').value = item.message;
                     document.getElementById('result').innerHTML = item.result;
                 };
                 historyList.appendChild(li);
