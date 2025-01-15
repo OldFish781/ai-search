@@ -28,3 +28,5 @@ __pycache__
 
 rsync_deploy.sh
 .exclude
+
+dist
